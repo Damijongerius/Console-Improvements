@@ -4,15 +4,29 @@ import app.jongerius.dami.consoleImprovements.api.ConsoleTUI;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * A widget that displays a horizontal bar chart.
+ */
 public class BarChart implements ConsoleTUI.Widget {
     private final String title;
     private final Map<String, Double> data = new LinkedHashMap<>();
     private final int maxHeight = 5;
 
+    /**
+     * Constructs a new BarChart with the given title.
+     *
+     * @param title The title displayed above the chart.
+     */
     public BarChart(String title) {
         this.title = title;
     }
 
+    /**
+     * Sets or updates the value for a specific label in the chart.
+     *
+     * @param label The label of the bar.
+     * @param value The value of the bar.
+     */
     public void setValue(String label, double value) {
         data.put(label, value);
     }

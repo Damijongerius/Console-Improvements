@@ -3,20 +3,37 @@ package app.jongerius.dami.consoleImprovements.api.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A utility class to build and print a formatted table with borders directly to the console.
+ * Note: This is not currently a TUI Widget, but a static rendering utility.
+ */
 public class Table {
     private final List<String> headers;
     private final List<List<String>> rows = new ArrayList<>();
     private final String borderColor = "\u001B[37m"; // Gray
     private final String headerColor = "\u001B[36;1m"; // Bold Cyan
 
+    /**
+     * Constructs a new Table with the specified headers.
+     *
+     * @param headers The column headers.
+     */
     public Table(List<String> headers) {
         this.headers = headers;
     }
 
+    /**
+     * Adds a row of data to the table.
+     *
+     * @param row A list of strings corresponding to each column.
+     */
     public void addRow(List<String> row) {
         rows.add(row);
     }
 
+    /**
+     * Renders and prints the constructed table directly to the console.
+     */
     public void print() {
         if (headers.isEmpty()) return;
 

@@ -5,15 +5,28 @@ import app.jongerius.dami.consoleImprovements.api.ConsoleTUI;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A widget that manages and displays the progress of multiple concurrent tasks.
+ */
 public class TaskManager implements ConsoleTUI.Widget {
     private final List<Task> tasks = new ArrayList<>();
 
+    /**
+     * Represents a single task with its own progress and styling.
+     */
     public static class Task {
         public String name;
         public int progress;
         public int total;
         public String color;
 
+        /**
+         * Constructs a new Task.
+         *
+         * @param name The name of the task.
+         * @param total The total target value for 100% completion.
+         * @param color The ANSI color code for the task name.
+         */
         public Task(String name, int total, String color) {
             this.name = name;
             this.total = total;
@@ -22,10 +35,20 @@ public class TaskManager implements ConsoleTUI.Widget {
         }
     }
 
+    /**
+     * Adds a task to be tracked and rendered.
+     *
+     * @param task The task to add.
+     */
     public void addTask(Task task) {
         tasks.add(task);
     }
 
+    /**
+     * Removes a task from tracking.
+     *
+     * @param task The task to remove.
+     */
     public void removeTask(Task task) {
         tasks.remove(task);
     }

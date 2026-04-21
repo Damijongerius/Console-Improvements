@@ -1,5 +1,9 @@
 package app.jongerius.dami.consoleImprovements.api;
 
+/**
+ * Utility class containing standard ANSI color codes and helper methods
+ * for applying colors and gradients to strings.
+ */
 public class ColorUtils {
     public static final String RESET = "\u001B[0m";
     public static final String BOLD = "\u001B[1m";
@@ -14,10 +18,29 @@ public class ColorUtils {
     public static final String CYAN = "\u001B[36m";
     public static final String WHITE = "\u001B[37m";
 
+    /**
+     * Wraps a string in an ANSI color code and appends a reset code.
+     *
+     * @param text The text to colorize.
+     * @param color The ANSI color code string.
+     * @return The colorized string.
+     */
     public static String color(String text, String color) {
         return color + text + RESET;
     }
 
+    /**
+     * Applies a linear RGB color gradient to a string of text.
+     *
+     * @param text The text to apply the gradient to.
+     * @param startR Start color red value (0-255).
+     * @param startG Start color green value (0-255).
+     * @param startB Start color blue value (0-255).
+     * @param endR End color red value (0-255).
+     * @param endG End color green value (0-255).
+     * @param endB End color blue value (0-255).
+     * @return The text formatted with an ANSI gradient.
+     */
     public static String gradient(String text, int startR, int startG, int startB, int endR, int endG, int endB) {
         StringBuilder sb = new StringBuilder();
         int len = text.length();

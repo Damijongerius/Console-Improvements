@@ -3,15 +3,28 @@ package app.jongerius.dami.consoleImprovements.api.widgets;
 import app.jongerius.dami.consoleImprovements.api.ConsoleTUI;
 import java.util.List;
 
+/**
+ * A widget that visually represents progress through a series of discrete steps.
+ */
 public class StepProgress implements ConsoleTUI.Widget {
     private final List<String> steps;
     private int currentStep;
 
+    /**
+     * Constructs a new StepProgress widget.
+     *
+     * @param steps A list of names for each step in the process.
+     */
     public StepProgress(List<String> steps) {
         this.steps = steps;
         this.currentStep = 0;
     }
 
+    /**
+     * Advances or regresses to a specific step.
+     *
+     * @param step The index of the step to set as active (0-based).
+     */
     public void setStep(int step) {
         this.currentStep = Math.max(0, Math.min(step, steps.size() - 1));
     }

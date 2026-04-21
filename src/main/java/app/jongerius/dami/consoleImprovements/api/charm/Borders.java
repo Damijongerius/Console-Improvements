@@ -1,5 +1,8 @@
 package app.jongerius.dami.consoleImprovements.api.charm;
 
+/**
+ * Defines various border styles for use with LipGloss and other rendering tools.
+ */
 public enum Borders {
     NONE("", "", "", "", "", "", "", ""),
     NORMAL("┌", "─", "┐", "│", "│", "└", "─", "┘"),
