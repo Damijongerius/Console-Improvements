@@ -14,11 +14,26 @@ public class LipGloss {
     private int paddingRight = 0;
     private int paddingTop = 0;
     private int paddingBottom = 0;
+    private int marginTop = 0;
+    private int marginRight = 0;
+    private int marginBottom = 0;
     private int marginLeft = 0;
     private Borders border = Borders.NONE;
     private String borderColor = "\u001B[37m"; // White default
     private String foregroundColor = "";
     private String backgroundColor = "";
+    private boolean bold = false;
+    private boolean italic = false;
+    private boolean underline = false;
+    private boolean strikethrough = false;
+    private Align alignment = Align.LEFT;
+
+    /**
+     * Alignment options for text content.
+     */
+    public enum Align {
+        LEFT, CENTER, RIGHT
+    }
 
     /**
      * Starts a new styling builder.
@@ -27,6 +42,61 @@ public class LipGloss {
      */
     public static LipGloss style() {
         return new LipGloss();
+    }
+
+    /**
+     * Sets the text alignment.
+     *
+     * @param alignment The alignment (LEFT, CENTER, RIGHT).
+     * @return The builder instance.
+     */
+    public LipGloss align(Align alignment) {
+        this.alignment = alignment;
+        return this;
+    }
+
+    /**
+     * Makes the text bold.
+     *
+     * @param bold True to enable, false to disable.
+     * @return The builder instance.
+     */
+    public LipGloss bold(boolean bold) {
+        this.bold = bold;
+        return this;
+    }
+
+    /**
+     * Makes the text italic.
+     *
+     * @param italic True to enable, false to disable.
+     * @return The builder instance.
+     */
+    public LipGloss italic(boolean italic) {
+        this.italic = italic;
+        return this;
+    }
+
+    /**
+     * Underlines the text.
+     *
+     * @param underline True to enable, false to disable.
+     * @return The builder instance.
+     */
+    public LipGloss underline(boolean underline) {
+        this.underline = underline;
+        return this;
+    }
+
+    /**
+     * Adds a strikethrough to the text.
+     *
+     * @param strikethrough True to enable, false to disable.
+     * @return The builder instance.
+     */
+    public LipGloss strikethrough(boolean strikethrough) {
+        this.strikethrough = strikethrough;
+        return this;
     }
 
     /**
@@ -81,6 +151,38 @@ public class LipGloss {
         this.paddingRight = right;
         this.paddingBottom = bottom;
         this.paddingLeft = left;
+        return this;
+    }
+
+    /**
+     * Sets uniform vertical and horizontal margin (spacing outside the border).
+     *
+     * @param v Vertical margin (top and bottom).
+     * @param h Horizontal margin (left and right).
+     * @return The builder instance.
+     */
+    public LipGloss margin(int v, int h) {
+        this.marginTop = v;
+        this.marginBottom = v;
+        this.marginLeft = h;
+        this.marginRight = h;
+        return this;
+    }
+
+    /**
+     * Sets specific margin for each side.
+     *
+     * @param top Top margin.
+     * @param right Right margin.
+     * @param bottom Bottom margin.
+     * @param left Left margin.
+     * @return The builder instance.
+     */
+    public LipGloss margin(int top, int right, int bottom, int left) {
+        this.marginTop = top;
+        this.marginRight = right;
+        this.marginBottom = bottom;
+        this.marginLeft = left;
         return this;
     }
 
@@ -182,66 +284,193 @@ public class LipGloss {
         int totalWidth = contentWidth + paddingLeft + paddingRight;
         StringBuilder sb = new StringBuilder();
 
-        String marginStr = " ".repeat(marginLeft);
+        String leftMarginStr = " ".repeat(marginLeft);
+        String rightMarginStr = " ".repeat(marginRight);
         String reset = "\u001B[0m";
+
+        // Top Margin
+        int fullWidth = marginLeft + totalWidth + (border != Borders.NONE ? 2 : 0) + marginRight;
+        for (int i = 0; i < marginTop; i++) {
+            sb.append(" ".repeat(fullWidth)).append("\n");
+        }
 
         // Top Border
         if (border != Borders.NONE) {
-            sb.append(marginStr)
+            sb.append(leftMarginStr)
               .append(borderColor).append(border.topLeft)
               .append(border.top.repeat(totalWidth))
               .append(border.topRight).append(reset)
+              .append(rightMarginStr)
               .append("\n");
         }
 
         // Top Padding
         for (int i = 0; i < paddingTop; i++) {
-            renderLine(sb, marginStr, "", totalWidth);
+            renderLine(sb, leftMarginStr, rightMarginStr, "", totalWidth);
         }
 
         // Content
         for (String line : lines) {
-            renderLine(sb, marginStr, line, totalWidth);
+            renderLine(sb, leftMarginStr, rightMarginStr, line, totalWidth);
         }
 
         // Bottom Padding
         for (int i = 0; i < paddingBottom; i++) {
-            renderLine(sb, marginStr, "", totalWidth);
+            renderLine(sb, leftMarginStr, rightMarginStr, "", totalWidth);
         }
 
         // Bottom Border
         if (border != Borders.NONE) {
-            sb.append(marginStr)
+            sb.append(leftMarginStr)
               .append(borderColor).append(border.bottomLeft)
               .append(border.bottom.repeat(totalWidth))
-              .append(border.bottomRight).append(reset); // No newline at end
+              .append(border.bottomRight).append(reset)
+              .append(rightMarginStr);
+              // We omit the final newline from the border itself to make inline joining easier
+        }
+
+        // If no bottom border, but we have bottom margin, we need to handle that.
+        // We handle bottom margin by appending newlines.
+        for (int i = 0; i < marginBottom; i++) {
+            if (border != Borders.NONE || i > 0) sb.append("\n");
+            sb.append(" ".repeat(fullWidth));
+            if (i < marginBottom - 1 && border == Borders.NONE) sb.append("\n");
         }
 
         return sb.toString();
     }
 
-    private void renderLine(StringBuilder sb, String marginStr, String contentLine, int totalWidth) {
+    private void renderLine(StringBuilder sb, String leftMarginStr, String rightMarginStr, String contentLine, int totalWidth) {
         String reset = "\u001B[0m";
-        sb.append(marginStr);
+        sb.append(leftMarginStr);
         if (border != Borders.NONE) sb.append(borderColor).append(border.left).append(reset);
         
         sb.append(backgroundColor);
         sb.append(" ".repeat(paddingLeft));
-        sb.append(foregroundColor).append(contentLine != null ? contentLine : "").append(reset).append(backgroundColor); // Reset needed inside? Maybe
         
-        int currentLen = contentLine != null ? stripAnsi(contentLine).length() : 0;
-        int remaining = totalWidth - paddingLeft - paddingRight - currentLen;
-        if (remaining > 0) sb.append(" ".repeat(remaining));
+        // Add typography formatting
+        StringBuilder styling = new StringBuilder();
+        styling.append(foregroundColor);
+        if (bold) styling.append("\u001B[1m");
+        if (italic) styling.append("\u001B[3m");
+        if (underline) styling.append("\u001B[4m");
+        if (strikethrough) styling.append("\u001B[9m");
+
+        String safeContent = contentLine != null ? contentLine : "";
+        int currentLen = stripAnsi(safeContent).length();
+        int availableSpace = totalWidth - paddingLeft - paddingRight;
+        int remaining = availableSpace - currentLen;
+
+        if (remaining < 0) remaining = 0; // Prevent negative repeats if content exceeds width somehow
+
+        // Handle Alignment
+        String leftPad = "";
+        String rightPad = "";
+
+        if (alignment == Align.LEFT) {
+            rightPad = " ".repeat(remaining);
+        } else if (alignment == Align.RIGHT) {
+            leftPad = " ".repeat(remaining);
+        } else if (alignment == Align.CENTER) {
+            int leftLen = remaining / 2;
+            int rightLen = remaining - leftLen;
+            leftPad = " ".repeat(leftLen);
+            rightPad = " ".repeat(rightLen);
+        }
+
+        sb.append(leftPad);
+        sb.append(styling).append(safeContent).append(reset).append(backgroundColor);
+        sb.append(rightPad);
         
         sb.append(" ".repeat(paddingRight));
         sb.append(reset);
 
         if (border != Borders.NONE) sb.append(borderColor).append(border.right).append(reset);
+        sb.append(rightMarginStr);
         sb.append("\n");
     }
 
-    private String stripAnsi(String s) {
+    private static String stripAnsi(String s) {
         if (s == null) return "";
         return s.replaceAll("\u001B\\[[;\\d]*m", "");
+    }
+
+    /**
+     * Joins multiple rendered text blocks horizontally.
+     *
+     * @param blocks The rendered ANSI strings to join.
+     * @return A single horizontally combined ANSI string.
+     */
+    public static String joinHorizontal(String... blocks) {
+        return joinHorizontal(0, blocks);
+    }
+
+    /**
+     * Joins multiple rendered text blocks horizontally with a specific spacing.
+     *
+     * @param spacing The number of spaces to insert between blocks.
+     * @param blocks The rendered ANSI strings to join.
+     * @return A single horizontally combined ANSI string.
+     */
+    public static String joinHorizontal(int spacing, String... blocks) {
+        if (blocks == null || blocks.length == 0) return "";
+
+        List<String[]> blockLines = new ArrayList<>();
+        int maxLines = 0;
+
+        for (String block : blocks) {
+            String[] lines = block != null ? block.split("\n", -1) : new String[]{""};
+            blockLines.add(lines);
+            maxLines = Math.max(maxLines, lines.length);
+        }
+
+        StringBuilder result = new StringBuilder();
+        String spacingStr = " ".repeat(Math.max(0, spacing));
+
+        for (int lineIdx = 0; lineIdx < maxLines; lineIdx++) {
+            for (int blockIdx = 0; blockIdx < blockLines.size(); blockIdx++) {
+                String[] lines = blockLines.get(blockIdx);
+                String lineContent = lineIdx < lines.length ? lines[lineIdx] : "";
+
+                result.append(lineContent);
+
+                if (blockIdx < blockLines.size() - 1) {
+                    // Calculate padding needed to match the max width of the current block
+                    int maxBlockWidth = 0;
+                    for (String l : lines) {
+                        maxBlockWidth = Math.max(maxBlockWidth, stripAnsi(l).length());
+                    }
+
+                    int currentLen = stripAnsi(lineContent).length();
+                    int paddingNeeded = maxBlockWidth - currentLen;
+                    if (paddingNeeded > 0) result.append(" ".repeat(paddingNeeded));
+
+                    result.append(spacingStr);
+                }
+            }
+            if (lineIdx < maxLines - 1) {
+                result.append("\n");
+            }
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Joins multiple rendered text blocks vertically.
+     *
+     * @param blocks The rendered ANSI strings to join.
+     * @return A single vertically combined ANSI string.
+     */
+    public static String joinVertical(String... blocks) {
+        if (blocks == null || blocks.length == 0) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < blocks.length; i++) {
+            sb.append(blocks[i]);
+            if (i < blocks.length - 1) {
+                sb.append("\n");
+            }
+        }
+        return sb.toString();
     }
 }

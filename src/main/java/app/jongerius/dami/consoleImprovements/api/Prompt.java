@@ -108,4 +108,78 @@ public class Prompt {
 
         return future;
     }
+
+    /**
+     * Asks the user to choose multiple options from a list.
+     *
+     * @param question The question to display before the options.
+     * @param options The list of valid options.
+     * @return A CompletableFuture that completes with a list of the exact selected option strings.
+     */
+    public static CompletableFuture<java.util.List<String>> multiChoice(String question, java.util.List<String> options) {
+        CompletableFuture<java.util.List<String>> future = new CompletableFuture<>();
+        if (options == null || options.isEmpty()) {
+            future.completeExceptionally(new IllegalArgumentException("Options list cannot be empty"));
+            return future;
+        }
+
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append("\r[?] ").append(question).append("\n");
+        for (int i = 0; i < options.size(); i++) {
+            promptBuilder.append(String.format("  %d) %s\n", i + 1, options.get(i)));
+        }
+        promptBuilder.append("Select options (comma-separated numbers) [1-").append(options.size()).append("]: ");
+
+        String fullPrompt = ColorUtils.color(promptBuilder.toString(), ColorUtils.CYAN);
+        LineReader reader = TerminalConsoleAppender.getReader();
+
+        if (reader == null) {
+            future.completeExceptionally(new RuntimeException("Console reader is not available"));
+            return future;
+        }
+
+        new Thread(() -> {
+            boolean valid = false;
+            while (!valid) {
+                try {
+                    String input = reader.readLine(fullPrompt).trim();
+                    if (input.isEmpty()) {
+                        StaticUI.printRaw(ColorUtils.color("Selection cannot be empty. Please try again.", ColorUtils.RED));
+                        continue;
+                    }
+
+                    String[] parts = input.split(",");
+                    java.util.List<String> selectedOptions = new java.util.ArrayList<>();
+                    boolean allValid = true;
+
+                    for (String part : parts) {
+                        try {
+                            int choiceIndex = Integer.parseInt(part.trim()) - 1;
+                            if (choiceIndex >= 0 && choiceIndex < options.size()) {
+                                selectedOptions.add(options.get(choiceIndex));
+                            } else {
+                                StaticUI.printRaw(ColorUtils.color("Invalid selection: " + (choiceIndex + 1) + ". Please try again.", ColorUtils.RED));
+                                allValid = false;
+                                break;
+                            }
+                        } catch (NumberFormatException e) {
+                            StaticUI.printRaw(ColorUtils.color("Please enter valid comma-separated numbers.", ColorUtils.RED));
+                            allValid = false;
+                            break;
+                        }
+                    }
+
+                    if (allValid) {
+                        future.complete(selectedOptions);
+                        valid = true;
+                    }
+                } catch (Exception e) {
+                    future.completeExceptionally(e);
+                    valid = true;
+                }
+            }
+        }).start();
+
+        return future;
+    }
 }
