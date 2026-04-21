@@ -273,7 +273,29 @@ public class LipGloss {
             }
         }
 
-        String[] lines = content.split("\n", -1);
+        String[] originalLines = content.split("\n", -1);
+        List<String> lines = new ArrayList<>();
+
+        // Handle wrapping if width is defined
+        if (width > 0) {
+            for (String line : originalLines) {
+                String cleanLine = stripAnsi(line);
+                if (cleanLine.length() > width) {
+                    // Wrap line to fit the width
+                    int currentIdx = 0;
+                    while (currentIdx < cleanLine.length()) {
+                        int endIdx = Math.min(currentIdx + width, cleanLine.length());
+                        lines.add(cleanLine.substring(currentIdx, endIdx)); // We lose internal ANSI formatting on wrap for now, this is a simplified wrap
+                        currentIdx += width;
+                    }
+                } else {
+                    lines.add(line);
+                }
+            }
+        } else {
+            for (String line : originalLines) lines.add(line);
+        }
+
         int contentWidth = 0;
         for (String line : lines) {
             contentWidth = Math.max(contentWidth, stripAnsi(line).length());
